@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>More than and Less Than</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(#eaf7ff,#fff7ef);text-align:center}
+#intro{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#intro img{width:220px;max-width:80%}
+.top{background:#ffb6d9;padding:12px;font-size:28px;font-weight:bold}
+#game{display:none}
+.row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:nowrap;max-width:1000px;margin:20px auto}
+.box{width:38%;min-height:170px;background:#fff;border:4px solid #ffd6e7;border-radius:20px;padding:10px;
+display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.obj{width:55px;height:55px;object-fit:contain;margin:auto}
+.symbol{width:80px;height:80px;border:4px dashed #ff80ab;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:40px;background:#fff}
+button{font-size:38px;margin:10px;padding:10px 20px;border-radius:16px}
+#feedback{font-size:48px;height:60px}
+@media(max-width:768px){
+.row{gap:6px}
+.box{width:40%;min-height:130px}
+.obj{width:36px;height:36px}
+.symbol{width:60px;height:60px;font-size:30px}
+button{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div id="intro">
+<img src="https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/more-than-and-less-than/assets/innovine-logo.png">
+<h2>Loading...</h2>
+</div>
 
+<div id="game">
+<div class="top">More than and Less Than</div>
+<h3>Count the objects and choose the correct symbol.</h3>
+<div id="slide"></div>
+<div id="feedback"></div>
+<button id="restart" onclick="location.reload()" style="display:none">Restart Game</button>
+</div>
+
+<script>
+const slides=[
+{img:'apple',l:8,r:3,a:'>'},
+{img:'star',l:2,r:7,a:'<'},
+{img:'butterfly',l:6,r:4,a:'>'},
+{img:'car',l:1,r:5,a:'<'},
+{img:'flower',l:9,r:2,a:'>'}
+];
+let i=0;
+function asset(n){return 'https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/more-than-and-less-than/assets/'+n+'.png';}
+setTimeout(()=>{intro.style.display='none';game.style.display='block';render();},5000);
+function render(){
+let s=slides[i],L='',R='';
+for(let k=0;k<s.l;k++)L+=`<img class=obj src="${asset(s.img)}">`;
+for(let k=0;k<s.r;k++)R+=`<img class=obj src="${asset(s.img)}">`;
+slide.innerHTML=`<div class=row><div class=box>${L}</div><div class=symbol id=sym></div><div class=box>${R}</div></div>
+<div><button onclick="check('>')">&gt;</button><button onclick="check('<')">&lt;</button></div>`;
+}
+function check(v){
+if(v===slides[i].a){sym.textContent=v;feedback.textContent='👏';i++;
+setTimeout(()=>{feedback.textContent=''; if(i<slides.length) render(); else finish();},1000);}
+else{feedback.textContent='❌';setTimeout(()=>feedback.textContent='',800);}
+}
+function finish(){slide.innerHTML='<h1>👏 Great Job! 👏</h1>';restart.style.display='inline-block';}
+</script>
+</body>
+</html>
