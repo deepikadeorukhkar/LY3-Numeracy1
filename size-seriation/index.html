@@ -1,1 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
+
+<title>Size Seriation</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Baloo 2',cursive;
+-webkit-tap-highlight-color:transparent;
+}
+
+body{
+overflow:hidden;
+background:#fff8fc;
+}
+
+/* INTRO */
+
+#intro{
+position:fixed;
+inset:0;
+background:white;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+#intro img{
+width:240px;
+max-width:80%;
+}
+
+/* GAME */
+
+#game{
+display:none;
+width:100vw;
+height:100vh;
+overflow:hidden;
+background:linear-gradient(
+180deg,
+#fff8fd,
+#fffdf6
+);
+}
+
+/* HEADER */
+
+#topBar{
+height:58px;
+background:#ffd4e7;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:30px;
+font-weight:700;
+color:#ff4d88;
+box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+#instruction{
+background:white;
+padding:10px;
+text-align:center;
+font-size:17px;
+font-weight:600;
+color:#555;
+border-bottom:2px solid #eee;
+}
+
+/* MAIN AREA */
+
+#main{
+height:calc(100vh - 103px);
+overflow:auto;
+padding:8px;
+}
+
+/* GRID */
+
+.gameGrid{
+
+width:100%;
+max-width:980px;
+
+margin:auto;
+
+display:grid;
+
+grid-template-columns:
+55px repeat(3,minmax(70px,1fr));
+
+gap:6px;
+
+}
+
+/* SHADOW BOXES */
+
+.shadowCell{
+
+background:#f5f5f5;
+
+border-radius:14px;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+min-height:70px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.12);
+
+}
+
+.objectLabel{
+
+font-size:16px;
+
+font-weight:700;
+
+color:#666;
+
+text-align:center;
+
+line-height:1.2;
+
+padding:4px;
+
+}
+
+/* EXAMPLE BOXES */
+
+.exampleCell{
+
+background:white;
+
+border-radius:14px;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+min-height:70px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.12);
+
+}
+
+/* DROP BOXES */
+
+.dropCell{
+
+background:white;
+
+border:3px dashed #ff9cc8;
+
+border-radius:14px;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+min-height:70px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.12);
+
+}
+
+.dropCell.correct{
+
+background:#ecffec;
+
+border:3px solid #60d860;
+
+}
+
+/* IMAGE SAFETY */
+
+.exampleCell img,
+.dropCell img,
+.dragItem img{
+
+max-width:85%;
+max-height:85%;
+
+object-fit:contain;
+
+}
+
+/* TRAY */
+
+.bottomTray{
+
+max-width:980px;
+
+margin:12px auto 0 auto;
+
+background:white;
+
+border-radius:18px;
+
+padding:10px;
+
+box-shadow:0 3px 10px rgba(0,0,0,.15);
+
+}
+
+.bottomTitle{
+
+text-align:center;
+
+font-size:20px;
+
+font-weight:700;
+
+color:#ff4d88;
+
+margin-bottom:10px;
+
+}
+
+.trayGrid{
+
+display:grid;
+
+grid-template-columns:
+repeat(3,1fr);
+
+gap:8px;
+
+}
+
+.dragItem{
+
+height:65px;
+
+background:#fff7c9;
+
+border:3px solid #ffe06b;
+
+border-radius:14px;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+cursor:grab;
+
+touch-action:none;
+
+}
+
+.dragItem img{
+
+mix-blend-mode:multiply;
+
+}
+
+/* FEEDBACK */
+
+.feedback{
+
+position:fixed;
+
+top:50%;
+left:50%;
+
+transform:
+translate(-50%,-50%);
+
+font-size:65px;
+
+display:none;
+
+pointer-events:none;
+
+z-index:999;
+
+}
+
+/* COMPLETION */
+
+#completeScreen{
+
+display:none;
+
+position:fixed;
+
+inset:0;
+
+background:
+rgba(255,255,255,.95);
+
+justify-content:center;
+align-items:center;
+flex-direction:column;
+
+z-index:1000;
+
+}
+
+#completeScreen h1{
+
+font-size:52px;
+
+color:#ff4d88;
+
+text-align:center;
+
+}
+
+#restartBtn{
+
+margin-top:20px;
+
+padding:15px 35px;
+
+border:none;
+
+border-radius:20px;
+
+background:#ff4d88;
+
+color:white;
+
+font-size:24px;
+
+cursor:pointer;
+
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+#topBar{
+font-size:22px;
+}
+
+#instruction{
+font-size:14px;
+}
+
+.gameGrid{
+
+grid-template-columns:
+45px repeat(3,minmax(55px,1fr));
+
+gap:4px;
+
+}
+
+.shadowCell,
+.exampleCell,
+.dropCell{
+
+min-height:60px;
+
+}
+
+.shadowCell img{
+
+width:22px;
+
+}
+
+.dragItem{
+
+height:58px;
+
+}
+
+.feedback{
+
+font-size:52px;
+
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="intro">
+
+<img
+src="https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/size-seriation/assets/innovine-logo.png">
+
+</div>
+
+<div id="game">
+
+<div id="topBar">
+Size Seriation
+</div>
+
+<div id="instruction">
+Compare the objects and arrange them from smallest to biggest.
+</div>
+
+<div id="main">
+
+<div id="gridArea"></div>
+
+<div id="trayArea"></div>
+
+</div>
+
+</div>
+
+<div id="feedback"
+class="feedback"></div>
+
+<div id="completeScreen">
+
+<h1>
+👏 Great Job! 👏
+</h1>
+
+<p style="font-size:28px;">
+You arranged everything correctly.
+</p>
+
+<button
+id="restartBtn"
+onclick="location.reload()">
+
+Play Again
+
+</button>
+
+</div>
+
+<audio id="correctSound"
+src="https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/size-seriation/assets/correct.mp3"></audio>
+
+<audio id="wrongSound"
+src="https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/size-seriation/assets/wrong.mp3"></audio>
+
+<audio id="bgMusic"
+loop
+src="https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/size-seriation/assets/background-music.mp3"></audio>
+
+<script>
+
+const ASSETS =
+"https://raw.githubusercontent.com/deepikadeorukhkar/LY3-Numeracy1/main/size-seriation/assets/";
+
+const feedback =
+document.getElementById("feedback");
+
+/* NEW SIZE SCALE */
+
+const scales = {
+
+small:28,
+
+medium:40,
+
+big:52
+
+};
+
+function speak(text){
+
+speechSynthesis.cancel();
+
+const msg =
+new SpeechSynthesisUtterance(text);
+
+msg.rate=.85;
+
+speechSynthesis.speak(msg);
+
+}
+
+function correctFX(){
+
+document.getElementById(
+"correctSound"
+).play();
+
+feedback.innerHTML="👏";
+
+feedback.style.display="block";
+
+setTimeout(()=>{
+
+feedback.style.display="none";
+
+},1000);
+
+}
+
+function wrongFX(){
+
+document.getElementById(
+"wrongSound"
+).play();
+
+feedback.innerHTML="❌";
+
+feedback.style.display="block";
+
+setTimeout(()=>{
+
+feedback.style.display="none";
+
+},1000);
+
+}
+
+let draggableItems=[];function shuffle(array){
+
+for(let i=array.length-1;i>0;i--){
+
+const j=
+Math.floor(
+Math.random()*(i+1)
+);
+
+[array[i],array[j]]=
+[array[j],array[i]];
+
+}
+
+return array;
+
+}
+
+/* ==========================
+   BUILD GAME
+========================== */
+
+function buildGame(){
+
+const grid=
+document.getElementById(
+"gridArea"
+);
+
+grid.innerHTML=`
+
+<div class="gameGrid">
+
+<!-- EXAMPLE ROW -->
+
+<div class="shadowCell">
+<span class="objectLabel">bear</span>
+</div>
+
+<div class="exampleCell">
+<img
+src="${ASSETS}bear.png"
+style="width:28px">
+</div>
+
+<div class="exampleCell">
+<img
+src="${ASSETS}bear.png"
+style="width:40px">
+</div>
+
+<div class="exampleCell">
+<img
+src="${ASSETS}bear.png"
+style="width:52px">
+</div>
+
+<!-- VASE ROW -->
+
+<div class="shadowCell">
+<span class="objectLabel">vase</span>
+</div>
+
+<div class="dropCell"
+data-object="vase"
+data-size="small">
+</div>
+
+<div class="dropCell"
+data-object="vase"
+data-size="medium">
+</div>
+
+<div class="dropCell"
+data-object="vase"
+data-size="big">
+</div>
+
+<!-- CLOCK ROW -->
+
+<div class="shadowCell">
+<span class="objectLabel">clock</span>
+</div>
+
+<div class="dropCell"
+data-object="clock"
+data-size="small">
+</div>
+
+<div class="dropCell"
+data-object="clock"
+data-size="medium">
+</div>
+
+<div class="dropCell"
+data-object="clock"
+data-size="big">
+</div>
+
+<!-- KITE ROW -->
+
+<div class="shadowCell">
+<span class="objectLabel">kite</span>
+</div>
+
+<div class="dropCell"
+data-object="kite"
+data-size="small">
+</div>
+
+<div class="dropCell"
+data-object="kite"
+data-size="medium">
+</div>
+
+<div class="dropCell"
+data-object="kite"
+data-size="big">
+</div>
+
+</div>
+
+`;
+
+buildTray();
+
+}
+
+/* ==========================
+   BUILD TRAY
+========================== */
+
+function buildTray(){
+
+const tray=
+document.getElementById(
+"trayArea"
+);
+
+const items=[
+
+{
+object:"vase",
+size:"small"
+},
+
+{
+object:"vase",
+size:"medium"
+},
+
+{
+object:"vase",
+size:"big"
+},
+
+{
+object:"clock",
+size:"small"
+},
+
+{
+object:"clock",
+size:"medium"
+},
+
+{
+object:"clock",
+size:"big"
+},
+
+{
+object:"kite",
+size:"small"
+},
+
+{
+object:"kite",
+size:"medium"
+},
+
+{
+object:"kite",
+size:"big"
+}
+
+];
+
+shuffle(items);
+
+draggableItems=items;
+
+tray.innerHTML=`
+
+<div class="bottomTray">
+
+<div class="bottomTitle">
+Drag the pictures into the correct boxes
+</div>
+
+<div class="trayGrid">
+
+${items.map(item=>`
+
+<div
+class="dragItem"
+draggable="true"
+
+data-object="${item.object}"
+
+data-size="${item.size}">
+
+<img
+src="${ASSETS}${item.object}.png"
+
+style="width:${
+
+item.object==="vase"
+
+?
+
+(
+
+item.size==="small"
+? 18
+
+:
+
+item.size==="medium"
+? 30
+
+:
+
+52
+
+)
+
+:
+
+scales[item.size]
+
+}px">
+
+</div>
+
+`).join("")}
+
+</div>
+
+</div>
+
+`;
+
+enableDesktopDrag();
+enableMobileDrag();
+
+}
+
+/* ==========================
+   DESKTOP DRAG
+========================== */
+
+function enableDesktopDrag(){
+
+const drags=
+document.querySelectorAll(
+".dragItem"
+);
+
+const drops=
+document.querySelectorAll(
+".dropCell"
+);
+
+drags.forEach(item=>{
+
+item.addEventListener(
+"dragstart",
+
+e=>{
+
+e.dataTransfer.setData(
+
+"text/plain",
+
+JSON.stringify({
+
+object:
+item.dataset.object,
+
+size:
+item.dataset.size
+
+})
+
+);
+
+}
+
+);
+
+});
+
+drops.forEach(drop=>{
+
+drop.addEventListener(
+"dragover",
+
+e=>e.preventDefault()
+
+);
+
+drop.addEventListener(
+"drop",
+
+handleDrop
+
+);
+
+});
+
+}
+
+function handleDrop(e){
+
+e.preventDefault();
+
+const data=
+JSON.parse(
+
+e.dataTransfer.getData(
+"text/plain"
+)
+
+);
+
+processAnswer(
+
+this,
+
+data.object,
+
+data.size
+
+);
+
+}/* ==========================
+   MOBILE DRAG SUPPORT
+   IOS + ANDROID
+========================== */
+
+let currentDrag = null;
+let dragClone = null;
+
+let offsetX = 0;
+let offsetY = 0;
+
+function enableMobileDrag(){
+
+const drags =
+document.querySelectorAll(
+".dragItem"
+);
+
+drags.forEach(item=>{
+
+item.addEventListener(
+
+"touchstart",
+
+touchStart,
+
+{passive:false}
+
+);
+
+});
+
+}
+
+function touchStart(e){
+
+e.preventDefault();
+
+currentDrag =
+e.currentTarget;
+
+const touch =
+e.touches[0];
+
+const rect =
+currentDrag.getBoundingClientRect();
+
+offsetX =
+touch.clientX - rect.left;
+
+offsetY =
+touch.clientY - rect.top;
+
+/* CREATE FLOATING COPY */
+
+dragClone =
+currentDrag.cloneNode(true);
+
+dragClone.style.position =
+"fixed";
+
+dragClone.style.left =
+rect.left + "px";
+
+dragClone.style.top =
+rect.top + "px";
+
+dragClone.style.width =
+rect.width + "px";
+
+dragClone.style.height =
+rect.height + "px";
+
+dragClone.style.opacity =
+".9";
+
+dragClone.style.zIndex =
+"9999";
+
+dragClone.style.pointerEvents =
+"none";
+
+document.body.appendChild(
+dragClone
+);
+
+document.addEventListener(
+"touchmove",
+touchMove,
+{passive:false}
+);
+
+document.addEventListener(
+"touchend",
+touchEnd
+);
+
+}
+
+function touchMove(e){
+
+e.preventDefault();
+
+if(!dragClone) return;
+
+const touch =
+e.touches[0];
+
+dragClone.style.left =
+(touch.clientX - offsetX) + "px";
+
+dragClone.style.top =
+(touch.clientY - offsetY) + "px";
+
+}
+
+function touchEnd(e){
+
+if(!dragClone) return;
+
+const touch =
+e.changedTouches[0];
+
+let target =
+document.elementFromPoint(
+touch.clientX,
+touch.clientY
+);
+
+while(
+target &&
+!target.classList.contains(
+"dropCell"
+)
+){
+target =
+target.parentElement;
+}
+
+if(target){
+
+processAnswer(
+
+target,
+
+currentDrag.dataset.object,
+
+currentDrag.dataset.size
+
+);
+
+}
+
+dragClone.remove();
+
+dragClone = null;
+
+currentDrag = null;
+
+document.removeEventListener(
+"touchmove",
+touchMove
+);
+
+document.removeEventListener(
+"touchend",
+touchEnd
+);
+
+}
+
+/* ==========================
+   ANSWER CHECKING
+========================== */
+
+function processAnswer(
+
+dropCell,
+
+object,
+
+size
+
+){
+
+/* BOX ALREADY FILLED */
+
+if(
+dropCell.children.length > 0
+){
+
+wrongFX();
+return;
+
+}
+
+const expectedObject =
+dropCell.dataset.object;
+
+const expectedSize =
+dropCell.dataset.size;
+
+/* CORRECT ANSWER */
+
+if(
+
+object === expectedObject &&
+
+size === expectedSize
+
+){
+
+const img =
+document.createElement("img");
+
+img.src =
+ASSETS + object + ".png";
+
+/* SPECIAL VASE SIZES */
+
+let finalSize =
+scales[size];
+
+if(object==="vase"){
+
+if(size==="small"){
+finalSize = 18;
+}
+
+if(size==="medium"){
+finalSize = 30;
+}
+
+if(size==="big"){
+finalSize = 52;
+}
+
+}
+
+img.style.width =
+finalSize + "px";
+
+img.style.maxWidth =
+"85%";
+
+img.style.maxHeight =
+"85%";
+
+img.style.objectFit =
+"contain";
+
+dropCell.appendChild(
+img
+);
+
+dropCell.classList.add(
+"correct"
+);
+
+const trayItem =
+document.querySelector(
+
+`.dragItem[data-object="${object}"][data-size="${size}"]`
+
+);
+
+if(trayItem){
+
+trayItem.style.visibility =
+"hidden";
+
+trayItem.style.pointerEvents =
+"none";
+
+}
+
+correctFX();
+
+speak(
+size + " " + object
+);
+
+checkCompletion();
+
+}
+
+/* WRONG ANSWER */
+
+else{
+
+wrongFX();
+
+speak(
+"Try again"
+);
+
+}
+
+}/* ==========================
+   COMPLETION CHECK
+========================== */
+
+function checkCompletion(){
+
+const completed =
+
+document.querySelectorAll(
+".dropCell.correct"
+).length;
+
+if(completed === 9){
+
+setTimeout(()=>{
+
+document.getElementById(
+"completeScreen"
+).style.display = "flex";
+
+speak(
+"Wonderful work. You completed Size Seriation."
+);
+
+correctFX();
+
+},1000);
+
+}
+
+}
+
+/* ==========================
+   START GAME
+========================== */
+
+function startGame(){
+
+buildGame();
+
+speak(
+"Welcome to Size Seriation. Compare the objects and arrange them from smallest to biggest."
+);
+
+}
+
+/* ==========================
+   INTRO SCREEN
+========================== */
+
+setTimeout(()=>{
+
+document.getElementById(
+"intro"
+).style.display = "none";
+
+document.getElementById(
+"game"
+).style.display = "block";
+
+startGame();
+
+},5000);
+
+/* ==========================
+   BACKGROUND MUSIC
+========================== */
+
+const bgMusic =
+document.getElementById(
+"bgMusic"
+);
+
+function startMusic(){
+
+bgMusic.play()
+.catch(()=>{});
+
+document.removeEventListener(
+"click",
+startMusic
+);
+
+document.removeEventListener(
+"touchstart",
+startMusic
+);
+
+}
+
+document.addEventListener(
+"click",
+startMusic
+);
+
+document.addEventListener(
+"touchstart",
+startMusic
+);
+
+/* ==========================
+   OPTIONAL IMAGE CLEANUP
+   (helps clock/kite if they
+   have light backgrounds)
+========================== */
+
+window.addEventListener(
+"load",
+()=>{
+
+document.querySelectorAll(
+".dragItem img, .dropCell img, .exampleCell img"
+).forEach(img=>{
+
+img.style.objectFit =
+"contain";
+
+img.style.maxWidth =
+"85%";
+
+img.style.maxHeight =
+"85%";
+
+});
+
+}
+);
+
+/* ==========================
+   RESTART GAME
+========================== */
+
+function restartGame(){
+
+location.reload();
+
+}
+
+/* ==========================
+   SAFETY CHECK
+========================== */
+
+window.onerror = function(
+msg,
+url,
+line
+){
+
+console.log(
+"Game Error:",
+msg,
+line
+);
+
+return false;
+
+};
+
+</script>
+
+</body>
+</html>
